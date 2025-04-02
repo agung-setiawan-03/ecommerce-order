@@ -13,6 +13,7 @@ import (
 type Profile struct {
 	Message string `json:"message"`
 	Data    struct {
+		ID          int    `json:"id"`
 		Usename     string `json:"username"`
 		FullName    string `json:"full_name"`
 		Email       string `json:"email"`

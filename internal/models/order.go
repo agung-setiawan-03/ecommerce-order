@@ -10,10 +10,10 @@ type Order struct {
 	ID         int         `json:"id"`
 	UserID     int         `json:"user_id"`
 	TotalPrice float64     `json:"total_price" gorm:"column:total_price;type:decimal(10,2)" validate:"required"`
-	Status     string      `json:"status" gorm:"column:status;type:varchar(20)" validate:"required"`
+	Status     string      `json:"status" gorm:"column:status;type:varchar(20)"`
 	CreatedAt  time.Time   `json:"-"`
 	UpdatedAt  time.Time   `json:"-"`
-	OrderItem  []OrderItem `json:"order_items" gorm:"foreignKey:OrderID"`
+	OrderItems []OrderItem `json:"items" gorm:"-"`
 }
 
 func (*Order) TableName() string {
