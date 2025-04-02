@@ -36,7 +36,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, profile external.Profile
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to marshal kafka payload")
 	}
-	kafkaErr := s.External.ProduceKafkaMessage(ctx, jsonPayload)
+	kafkaErr := s.External.ProduceKafkaMessage(ctx, helpers.GetEnv("KAFKA_TOPIC_PAYMENT_INITIATE", "payment-initiation-topic"), jsonPayload)
 	if kafkaErr != nil {
 		err := s.OrderRepo.UpdateStatusOrder(ctx, req.ID, constants.OrderStatusFailed)
 		if err != nil {
@@ -48,7 +48,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, profile external.Profile
 	return req, nil
 }
 
-func (s *OrderService) UpdateOrderStatus(ctx context.Context, orderID int, req models.OrderStatusRequest) error {
+func (s *OrderService) UpdateOrderStatus(ctx context.Context, profile external.Profile, orderID int, req models.OrderStatusRequest) error {
 	if !constants.MappingOrderStatus[req.Status] {
 		return fmt.Errorf("invalid status request: %s", req.Status)
 	}
@@ -64,15 +64,34 @@ func (s *OrderService) UpdateOrderStatus(ctx context.Context, orderID int, req m
 		if statusFlow[i] == req.Status {
 			validStatusReq = true
 		}
-	} 
+	}
 
 	if !validStatusReq {
 		return fmt.Errorf("invalid status flow, current status: %s, new status: %s", order.Status, req.Status)
 	}
 
+	if req.Status == constants.OrderStatusRefund {
+		if profile.Data.Role != "admin" {
+			return fmt.Errorf("only admin role can update status refund")
+		}
+
+		//  send message to kafka
+		kafkaPayload := models.RefundPayload{
+			OrderID: order.ID,
+			AdminID: profile.Data.ID,
+		}
+		jsonPayload, err := json.Marshal(kafkaPayload)
+		if err != nil {
+			return errors.Wrap(err, "failed to marshal kafka payload")
+		}
+		err = s.External.ProduceKafkaMessage(ctx, helpers.GetEnv("KAFKA_TOPIC_REFUND", "refund-topic"), jsonPayload)
+		if err != nil {
+			return errors.Wrap(err, "failed to send refund message to kafka")
+		}
+	}
+
 	return s.OrderRepo.UpdateStatusOrder(ctx, orderID, req.Status)
 }
-
 
 func (s *OrderService) GetOrderList(ctx context.Context) ([]models.Order, error) {
 	return s.OrderRepo.GetAllOrder(ctx)

@@ -70,9 +70,16 @@ func (api *OrderAPI) UpdateOrderStatus(e echo.Context) error {
 		return helpers.SendResponseHTTP(e, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
 	}
 
-	err = api.OrderService.UpdateOrderStatus(e.Request().Context(), orderID, req)
+	profileCtx := e.Get("profile")
+	profile, ok := profileCtx.(external.Profile)
+	if !ok {
+		log.Error("failed to get profile context")
+		return helpers.SendResponseHTTP(e, http.StatusInternalServerError, constants.ErrServerError, nil)
+	}
+
+	err = api.OrderService.UpdateOrderStatus(e.Request().Context(), profile, orderID, req)
 	if err != nil {
-		log.Error("failed to create order: ", err)
+		log.Error("failed to update order status: ", err)
 		return helpers.SendResponseHTTP(e, http.StatusInternalServerError, constants.ErrServerError, nil)
 	}
 
