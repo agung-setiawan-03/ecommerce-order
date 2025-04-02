@@ -13,7 +13,7 @@ type Order struct {
 	Status     string      `json:"status" gorm:"column:status;type:varchar(20)"`
 	CreatedAt  time.Time   `json:"-"`
 	UpdatedAt  time.Time   `json:"-"`
-	OrderItems []OrderItem `json:"items" gorm:"-"`
+	OrderItems []OrderItem `json:"items"`
 }
 
 func (*Order) TableName() string {
@@ -41,6 +41,15 @@ func (*OrderItem) TableName() string {
 }
 
 func (l OrderItem) Validate() error {
+	v := validator.New()
+	return v.Struct(l)
+}
+
+type OrderStatusRequest struct {
+	Status string `json:"status" validate:"required"`
+}
+
+func (l OrderStatusRequest) Validate() error {
 	v := validator.New()
 	return v.Struct(l)
 }

@@ -20,6 +20,7 @@ func ServeHTTP() {
 
 	orderV1 := e.Group("orders/v1")
 	orderV1.POST("", d.OrderAPI.CreateOrder, d.MiddlewareValidateAuth)
+	orderV1.PUT("/:id/status", d.OrderAPI.UpdateOrderStatus, d.MiddlewareValidateAuth)
 
 	e.Start(":" + helpers.GetEnv("PORT", "9001"))
 }

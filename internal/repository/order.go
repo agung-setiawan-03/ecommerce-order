@@ -19,22 +19,20 @@ func (r *OrderRepo) InsertNewOrder(ctx context.Context, order *models.Order) err
 				return err
 			}
 
-			for i, orderItem := range order.OrderItems {
-				orderItem.OrderID = order.ID
-				err := tx.Create(&orderItem).Error
-				if err != nil {
-					return err
-				}
-				order.OrderItems[i].ID = orderItem.ID
-				order.OrderItems[i].OrderID = order.ID
-			}
-
 			return nil
 		},
- 	 )
+	)
 }
-
 
 func (r *OrderRepo) UpdateStatusOrder(ctx context.Context, orderID int, status string) error {
 	return r.DB.Exec("UPDATE orders SET status = ? WHERE id = ?", status, orderID).Error
+}
+
+func (r *OrderRepo) GetOrderDetail(ctx context.Context, orderID int) (models.Order, error) {
+	var (
+		resp models.Order
+		err  error
+	)
+	err = r.DB.Preload("OrderItems").Where("id = ?", orderID).First(&resp).Error
+	return resp, err
 }

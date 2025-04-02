@@ -8,6 +8,7 @@ import (
 	"ecommerce-order/internal/interfaces"
 	"ecommerce-order/internal/models"
 	"encoding/json"
+	"fmt"
 
 	"github.com/pkg/errors"
 )
@@ -45,4 +46,29 @@ func (s *OrderService) CreateOrder(ctx context.Context, profile external.Profile
 	}
 
 	return req, nil
+}
+
+func (s *OrderService) UpdateOrderStatus(ctx context.Context, orderID int, req models.OrderStatusRequest) error {
+	if !constants.MappingOrderStatus[req.Status] {
+		return fmt.Errorf("invalid status request: %s", req.Status)
+	}
+
+	order, err := s.OrderRepo.GetOrderDetail(ctx, orderID)
+	if err != nil {
+		return errors.Wrap(err, "failed to get order detail")
+	}
+
+	validStatusReq := false
+	statusFlow := constants.MappingFlowOrderStatus[order.Status]
+	for i := range statusFlow {
+		if statusFlow[i] == req.Status {
+			validStatusReq = true
+		}
+	} 
+
+	if !validStatusReq {
+		return fmt.Errorf("invalid status flow, current status: %s, new status: %s", order.Status, req.Status)
+	}
+
+	return s.OrderRepo.UpdateStatusOrder(ctx, orderID, req.Status)
 }

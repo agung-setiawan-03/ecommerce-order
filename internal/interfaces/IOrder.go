@@ -11,12 +11,16 @@ import (
 type IOrderRepo interface {
 	InsertNewOrder(ctx context.Context, order *models.Order) error
 	UpdateStatusOrder(ctx context.Context, orderID int, status string) error
+	GetOrderDetail(ctx context.Context, orderID int) (models.Order, error)
 }
 
 type IOrderService interface {
 	CreateOrder(ctx context.Context, profile external.Profile, req *models.Order) (*models.Order, error)
+	UpdateOrderStatus(ctx context.Context, orderID int, req models.OrderStatusRequest) error
+	
 }
 
 type IOrderAPI interface {
 	CreateOrder(e echo.Context) error
+	UpdateOrderStatus(e echo.Context) error
 }
