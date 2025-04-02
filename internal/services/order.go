@@ -72,3 +72,12 @@ func (s *OrderService) UpdateOrderStatus(ctx context.Context, orderID int, req m
 
 	return s.OrderRepo.UpdateStatusOrder(ctx, orderID, req.Status)
 }
+
+
+func (s *OrderService) GetOrderList(ctx context.Context) ([]models.Order, error) {
+	return s.OrderRepo.GetAllOrder(ctx)
+}
+
+func (s *OrderService) GetOrderDetail(ctx context.Context, orderID int) (models.Order, error) {
+	return s.OrderRepo.GetOrderDetail(ctx, orderID)
+}

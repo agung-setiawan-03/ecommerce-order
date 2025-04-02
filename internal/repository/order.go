@@ -33,6 +33,15 @@ func (r *OrderRepo) GetOrderDetail(ctx context.Context, orderID int) (models.Ord
 		resp models.Order
 		err  error
 	)
-	err = r.DB.Preload("OrderItems").Where("id = ?", orderID).First(&resp).Error
+	err = r.DB.Model(&models.Order{}).Preload("OrderItems").Where("id = ?", orderID).First(&resp).Error
+	return resp, err
+}
+
+func (r *OrderRepo) GetAllOrder(ctx context.Context) ([]models.Order, error) {
+	var (
+		resp []models.Order
+		err  error
+	)
+	err = r.DB.Model(&models.Order{}).Preload("OrderItems").Order("id DESC").Find(&resp).Error
 	return resp, err
 }
