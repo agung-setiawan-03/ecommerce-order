@@ -10,8 +10,8 @@ import (
 
 type IOrderRepo interface {
 	InsertNewOrder(ctx context.Context, order *models.Order) error
-	UpdateStatusOrder(ctx context.Context, orderID int, status string) error
 	GetOrderDetail(ctx context.Context, orderID int) (models.Order, error)
+	UpdateStatusOrder(ctx context.Context, orderID int, status string) error
 	GetAllOrder(ctx context.Context) ([]models.Order, error)
 }
 

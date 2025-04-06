@@ -73,8 +73,8 @@ func (api *OrderAPI) UpdateOrderStatus(e echo.Context) error {
 	profileCtx := e.Get("profile")
 	profile, ok := profileCtx.(external.Profile)
 	if !ok {
-		log.Error("failed to get profile context")
-		return helpers.SendResponseHTTP(e, http.StatusInternalServerError, constants.ErrServerError, nil)
+		log.Warn("failed to get profile context")
+		profile = external.Profile{}
 	}
 
 	err = api.OrderService.UpdateOrderStatus(e.Request().Context(), profile, orderID, req)
@@ -85,7 +85,6 @@ func (api *OrderAPI) UpdateOrderStatus(e echo.Context) error {
 
 	return helpers.SendResponseHTTP(e, http.StatusOK, constants.Success, nil)
 }
-
 
 func (api *OrderAPI) GetOrderDetail(e echo.Context) error {
 	var (
@@ -108,10 +107,9 @@ func (api *OrderAPI) GetOrderDetail(e echo.Context) error {
 	return helpers.SendResponseHTTP(e, http.StatusOK, constants.Success, resp)
 }
 
-
 func (api *OrderAPI) GetOrderList(e echo.Context) error {
 	var (
-		log        = helpers.Logger
+		log = helpers.Logger
 	)
 
 	resp, err := api.OrderService.GetOrderList(e.Request().Context())

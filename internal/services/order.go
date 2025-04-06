@@ -27,8 +27,9 @@ func (s *OrderService) CreateOrder(ctx context.Context, profile external.Profile
 		return nil, errors.Wrap(err, "failed to insert order")
 	}
 
-	// Produce new message
+	// produce new message
 	kafkaPayload := models.PaymentInitiatePayload{
+		UserID:     profile.Data.ID,
 		OrderID:    req.ID,
 		TotalPrice: req.TotalPrice,
 	}
@@ -67,15 +68,15 @@ func (s *OrderService) UpdateOrderStatus(ctx context.Context, profile external.P
 	}
 
 	if !validStatusReq {
-		return fmt.Errorf("invalid status flow, current status: %s, new status: %s", order.Status, req.Status)
+		return fmt.Errorf("invalid status flow. current status: %s, new status %s", order.Status, req.Status)
 	}
 
 	if req.Status == constants.OrderStatusRefund {
 		if profile.Data.Role != "admin" {
-			return fmt.Errorf("only admin role can update status refund")
+			return errors.New("only admin role can update status refund")
 		}
 
-		//  send message to kafka
+		// send message to kafka
 		kafkaPayload := models.RefundPayload{
 			OrderID: order.ID,
 			AdminID: profile.Data.ID,

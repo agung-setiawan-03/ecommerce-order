@@ -3,17 +3,17 @@ package models
 import (
 	"time"
 
-	"github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator"
 )
 
 type Order struct {
 	ID         int         `json:"id"`
 	UserID     int         `json:"user_id"`
 	TotalPrice float64     `json:"total_price" gorm:"column:total_price;type:decimal(10,2)" validate:"required"`
-	Status     string      `json:"status" gorm:"column:status;type:varchar(20)"`
+	Status     string      `json:"status" gorm:"column:status;type:varchar(10)"`
 	CreatedAt  time.Time   `json:"-"`
 	UpdatedAt  time.Time   `json:"-"`
-	OrderItems []OrderItem `json:"items"`
+	OrderItem  []OrderItem `json:"items"`
 }
 
 func (*Order) TableName() string {
